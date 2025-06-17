@@ -9,6 +9,15 @@ body {
   display: flex;
   min-height: 100vh;
 }
+
+.item-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 7px;
+  color: #b881a3;
+  letter-spacing: 0.2px;
+}
+ 
 .sidebar {
   width: 240px;
   background: #f3f3fb;
