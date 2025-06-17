@@ -1,4 +1,3 @@
-// Завантаження і відображення категорій/повідомлень
 let data = [];
 let activeTab = 0;
 
@@ -10,46 +9,60 @@ fetch('messages.json')
     renderMain(0);
   });
 
-// Формуємо масив items у уніфікованому вигляді з полями: title (заголовок), ukr, en
 function transformObject(obj) {
-  // Для категорії з categories
+  // 1. categories (перша категорія)
   if (obj.categories) {
     const items = [];
     Object.entries(obj.categories).forEach(([situation, arr]) => {
       if (arr.length === 2) {
-        items.push({ title: situation, ukr: arr[0], en: arr[1] });
+        items.push({ title: situation, ukr: adaptToTelegram(arr[0]), en: adaptToTelegram(arr[1]) });
       }
     });
     return { tab: obj.tab, items };
   }
-  // FAQ: Питання, Відповідь укр, Відповідь англ
-  if (obj.tab === "FAQ") {
-    const items = (obj.items || []).map(el => ({
+  // 2. FAQ (Питання)
+  if (obj.items && obj.items.length && obj.items.every(el => "Питання" in el)) {
+    const items = obj.items.map(el => ({
       title: el["Питання"] || '',
-      ukr: el["Відповідь укр"] || '',
-      en: el["Відповідь англ"] || ''
+      ukr: adaptToTelegram(el["Відповідь укр"] || ''),
+      en: adaptToTelegram(el["Відповідь англ"] || '')
     }));
     return { tab: obj.tab, items };
   }
-  // Обов'язки: Позиція, Укр повідомлення, Англ повідомлення
-  if (obj.tab && Array.isArray(obj.items) && obj.items[0]?.Позиція) {
+  // 3. Обов'язки (Позиція)
+  if (obj.items && obj.items.length && obj.items.every(el => "Позиція" in el)) {
     const items = obj.items.map(el => ({
       title: el["Позиція"] || '',
-      ukr: el["Укр повідомлення"] || '',
-      en: el["Англ повідомлення"] || ''
+      ukr: adaptToTelegram(el["Укр повідомлення"] || ''),
+      en: adaptToTelegram(el["Англ повідомлення"] || '')
     }));
     return { tab: obj.tab, items };
   }
-  // Інші категорії: Ситуація, Укр повідомлення, Англ повідомлення
+  // 4. Інші категорії (items)
   const items = (obj.items || []).map(el => ({
     title: el["Ситуація"] || '',
-    ukr: el["Укр повідомлення"] || '',
-    en: el["Англ повідомлення"] || ''
+    ukr: adaptToTelegram(el["Укр повідомлення"] || ''),
+    en: adaptToTelegram(el["Англ повідомлення"] || '')
   }));
   return { tab: obj.tab, items };
 }
 
-// Відображення бокового меню
+// Основна функція адаптації для Telegram
+function adaptToTelegram(text) {
+  if (!text) return '';
+  // Заміна **жирного** → *курсив* для TG, булети, відступи для Telegram
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '*$1*')
+    .replace(/^[-•]\s?/gm, '— ')
+    .replace(/\n{2,}/g, '\n\n')        // подвійні переноси як і в TG
+    .replace(/\n/g, '\n')              // одинарний перенос — для TG це ок
+    .replace(/ {2,}/g, ' ')
+    .replace(/• /g, '— ')
+    .replace(/  +/g, ' ')
+    .trim();
+}
+
+// Бокове меню
 function renderSidebar() {
   const sidebar = document.getElementById('sidebar');
   sidebar.innerHTML = '';
@@ -66,7 +79,7 @@ function renderSidebar() {
   });
 }
 
-// Відображення центральної панелі
+// Відображення повідомлень
 function renderMain(tabIdx) {
   const main = document.getElementById('main');
   main.innerHTML = '';
@@ -75,7 +88,7 @@ function renderMain(tabIdx) {
     const block = document.createElement('div');
     block.className = 'item-block';
 
-    // Заголовок (питання/позиція/ситуація)
+    // Додаємо заголовок (назва ситуації/позиції/питання)
     if (item.title) {
       const title = document.createElement('div');
       title.className = 'item-title';
@@ -83,27 +96,39 @@ function renderMain(tabIdx) {
       block.appendChild(title);
     }
 
-    // Блоки для повідомлень
+    // Рядок із кнопками/блоками повідомлень
     const row = document.createElement('div');
     row.className = 'message-row';
 
     if (item.ukr) {
       const btnUkr = document.createElement('button');
-      btnUkr.className = 'message-btn';
+      btnUkr.className = 'message-btn tg-ua';
       btnUkr.type = 'button';
-      btnUkr.innerHTML = item.ukr;
-      btnUkr.onclick = () => navigator.clipboard.writeText(item.ukr);
+      btnUkr.innerHTML = formatMessageForHtml(item.ukr);
+      btnUkr.onclick = () => copyToClipboard(item.ukr);
       row.appendChild(btnUkr);
     }
     if (item.en) {
       const btnEn = document.createElement('button');
-      btnEn.className = 'message-btn';
+      btnEn.className = 'message-btn tg-en';
       btnEn.type = 'button';
-      btnEn.innerHTML = item.en;
-      btnEn.onclick = () => navigator.clipboard.writeText(item.en);
+      btnEn.innerHTML = formatMessageForHtml(item.en);
+      btnEn.onclick = () => copyToClipboard(item.en);
       row.appendChild(btnEn);
     }
     block.appendChild(row);
     main.appendChild(block);
   });
+}
+
+// Форматуємо для браузерного перегляду (залишаємо переноси для читабельності)
+function formatMessageForHtml(text) {
+  return text
+    .replace(/\n/g, '<br>')
+    .replace(/\*([^\*]+)\*/g, '<b>$1</b>'); // виділяємо жирним для візуалу
+}
+
+// Копіювання для Telegram (копіюється plain text)
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text);
 }
