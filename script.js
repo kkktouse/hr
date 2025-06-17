@@ -10,7 +10,7 @@ fetch('messages.json')
   });
 
 function transformObject(obj) {
-  // 1. categories (перша категорія)
+  // Категорія з categories
   if (obj.categories) {
     const items = [];
     Object.entries(obj.categories).forEach(([situation, arr]) => {
@@ -20,7 +20,7 @@ function transformObject(obj) {
     });
     return { tab: obj.tab, items };
   }
-  // 2. FAQ (Питання)
+  // FAQ (Питання)
   if (obj.items && obj.items.length && obj.items.every(el => "Питання" in el)) {
     const items = obj.items.map(el => ({
       title: el["Питання"] || '',
@@ -29,7 +29,7 @@ function transformObject(obj) {
     }));
     return { tab: obj.tab, items };
   }
-  // 3. Обов'язки (Позиція)
+  // Обов'язки (Позиція)
   if (obj.items && obj.items.length && obj.items.every(el => "Позиція" in el)) {
     const items = obj.items.map(el => ({
       title: el["Позиція"] || '',
@@ -38,7 +38,7 @@ function transformObject(obj) {
     }));
     return { tab: obj.tab, items };
   }
-  // 4. Інші категорії (items)
+  // Інші категорії (items)
   const items = (obj.items || []).map(el => ({
     title: el["Ситуація"] || '',
     ukr: adaptToTelegram(el["Укр повідомлення"] || ''),
@@ -50,19 +50,18 @@ function transformObject(obj) {
 // Основна функція адаптації для Telegram
 function adaptToTelegram(text) {
   if (!text) return '';
-  // Заміна **жирного** → *курсив* для TG, булети, відступи для Telegram
+  // Важливо: зберігаємо подвійні зірочки для Telegram (жирний), списки → тире
   return text
-    .replace(/\*\*(.+?)\*\*/g, '*$1*')
+    .replace(/\*\*(.+?)\*\*/g, '**$1**') // залишаємо подвійні зірочки для жирного в TG
     .replace(/^[-•]\s?/gm, '— ')
-    .replace(/\n{2,}/g, '\n\n')        // подвійні переноси як і в TG
-    .replace(/\n/g, '\n')              // одинарний перенос — для TG це ок
+    .replace(/\n{2,}/g, '\n\n')
     .replace(/ {2,}/g, ' ')
     .replace(/• /g, '— ')
     .replace(/  +/g, ' ')
     .trim();
 }
 
-// Бокове меню
+// Рендер бокового меню
 function renderSidebar() {
   const sidebar = document.getElementById('sidebar');
   sidebar.innerHTML = '';
@@ -79,7 +78,7 @@ function renderSidebar() {
   });
 }
 
-// Відображення повідомлень
+// Рендер основного блоку
 function renderMain(tabIdx) {
   const main = document.getElementById('main');
   main.innerHTML = '';
@@ -88,7 +87,7 @@ function renderMain(tabIdx) {
     const block = document.createElement('div');
     block.className = 'item-block';
 
-    // Додаємо заголовок (назва ситуації/позиції/питання)
+    // Заголовок (ситуація/позиція/питання)
     if (item.title) {
       const title = document.createElement('div');
       title.className = 'item-title';
@@ -96,7 +95,7 @@ function renderMain(tabIdx) {
       block.appendChild(title);
     }
 
-    // Рядок із кнопками/блоками повідомлень
+    // Блок повідомлень (укр/англ)
     const row = document.createElement('div');
     row.className = 'message-row';
 
@@ -121,14 +120,14 @@ function renderMain(tabIdx) {
   });
 }
 
-// Форматуємо для браузерного перегляду (залишаємо переноси для читабельності)
+// Форматування для перегляду в браузері (відображає перенос рядків та жирний)
 function formatMessageForHtml(text) {
   return text
     .replace(/\n/g, '<br>')
-    .replace(/\*([^\*]+)\*/g, '<b>$1</b>'); // виділяємо жирним для візуалу
+    .replace(/\*\*([^\*]+)\*\*/g, '<b>$1</b>'); // в TG залишиться **жирний**, у браузері — жирний
 }
 
-// Копіювання для Telegram (копіюється plain text)
+// Копіювання у clipboard (залишає подвійні зірочки для Telegram!)
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text);
 }
