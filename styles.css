@@ -75,13 +75,27 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  /* --- додано --- */
   position: sticky;
   top: 0;
   height: 100vh;
   overflow-y: auto;
   z-index: 10;
 }
+@media (max-width: 700px) {
+  .container { flex-direction: column; }
+  .sidebar { 
+    width: 100%; 
+    flex-direction: row; 
+    gap: 0; 
+    overflow-x: auto; 
+    position: static;  /* на мобільному не sticky! */
+    height: auto;
+  }
+  .sidebar-btn { padding: 12px 8px; font-size: 1rem; white-space: nowrap; }
+  .main { padding: 14px 7px; }
+  .item-block { margin-bottom: 20px; }
+}
+
 
 .sidebar-btn {
   background: none;
