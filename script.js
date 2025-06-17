@@ -5,47 +5,48 @@ let activeTab = 0;
 fetch('messages.json')
   .then(res => res.json())
   .then(json => {
-    data = json.map(transformObject); // Стандартизуємо всі категорії в один формат
+    data = json.map(transformObject);
     renderSidebar();
     renderMain(0);
   });
 
-// Перетворюємо дані до єдиного формату: tab, items[{ Ситуація/Питання/Позиція, Укр повідомлення, Англ повідомлення }]
+// Формуємо масив items у уніфікованому вигляді з полями: title (заголовок), ukr, en
 function transformObject(obj) {
-  if (obj.items) return obj;
-  // Якщо є categories (наприклад, перший об'єкт)
+  // Для категорії з categories
   if (obj.categories) {
     const items = [];
     Object.entries(obj.categories).forEach(([situation, arr]) => {
-      if (arr.length === 2) { // [ukr, en]
-        items.push({
-          "Ситуація": situation,
-          "Укр повідомлення": arr[0],
-          "Англ повідомлення": arr[1]
-        });
+      if (arr.length === 2) {
+        items.push({ title: situation, ukr: arr[0], en: arr[1] });
       }
     });
     return { tab: obj.tab, items };
   }
-  // Для FAQ — трохи інші ключі
+  // FAQ: Питання, Відповідь укр, Відповідь англ
   if (obj.tab === "FAQ") {
     const items = (obj.items || []).map(el => ({
-      "Ситуація": el["Питання"],
-      "Укр повідомлення": el["Відповідь укр"],
-      "Англ повідомлення": el["Відповідь англ"]
+      title: el["Питання"] || '',
+      ukr: el["Відповідь укр"] || '',
+      en: el["Відповідь англ"] || ''
     }));
     return { tab: obj.tab, items };
   }
-  // Для "Обов'язки..." — трохи інші ключі
+  // Обов'язки: Позиція, Укр повідомлення, Англ повідомлення
   if (obj.tab && Array.isArray(obj.items) && obj.items[0]?.Позиція) {
     const items = obj.items.map(el => ({
-      "Ситуація": el["Позиція"],
-      "Укр повідомлення": el["Укр повідомлення"],
-      "Англ повідомлення": el["Англ повідомлення"]
+      title: el["Позиція"] || '',
+      ukr: el["Укр повідомлення"] || '',
+      en: el["Англ повідомлення"] || ''
     }));
     return { tab: obj.tab, items };
   }
-  return obj;
+  // Інші категорії: Ситуація, Укр повідомлення, Англ повідомлення
+  const items = (obj.items || []).map(el => ({
+    title: el["Ситуація"] || '',
+    ukr: el["Укр повідомлення"] || '',
+    en: el["Англ повідомлення"] || ''
+  }));
+  return { tab: obj.tab, items };
 }
 
 // Відображення бокового меню
@@ -74,30 +75,32 @@ function renderMain(tabIdx) {
     const block = document.createElement('div');
     block.className = 'item-block';
 
-    // Назва ситуації/питання
-    const title = document.createElement('div');
-    title.className = 'item-title';
-    title.textContent = item["Ситуація"] || '';
-    block.appendChild(title);
+    // Заголовок (питання/позиція/ситуація)
+    if (item.title) {
+      const title = document.createElement('div');
+      title.className = 'item-title';
+      title.textContent = item.title;
+      block.appendChild(title);
+    }
 
     // Блоки для повідомлень
     const row = document.createElement('div');
     row.className = 'message-row';
 
-    if (item["Укр повідомлення"]) {
+    if (item.ukr) {
       const btnUkr = document.createElement('button');
       btnUkr.className = 'message-btn';
       btnUkr.type = 'button';
-      btnUkr.innerHTML = item["Укр повідомлення"];
-      btnUkr.onclick = () => navigator.clipboard.writeText(item["Укр повідомлення"]);
+      btnUkr.innerHTML = item.ukr;
+      btnUkr.onclick = () => navigator.clipboard.writeText(item.ukr);
       row.appendChild(btnUkr);
     }
-    if (item["Англ повідомлення"]) {
+    if (item.en) {
       const btnEn = document.createElement('button');
       btnEn.className = 'message-btn';
       btnEn.type = 'button';
-      btnEn.innerHTML = item["Англ повідомлення"];
-      btnEn.onclick = () => navigator.clipboard.writeText(item["Англ повідомлення"]);
+      btnEn.innerHTML = item.en;
+      btnEn.onclick = () => navigator.clipboard.writeText(item.en);
       row.appendChild(btnEn);
     }
     block.appendChild(row);
