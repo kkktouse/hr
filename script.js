@@ -9,59 +9,56 @@ fetch('messages.json')
     renderMain(0);
   });
 
+// Універсальна функція для парсингу будь-яких вкладок
 function transformObject(obj) {
-  // Категорія з categories
+  // Вкладка-повідомлення (з categories)
   if (obj.categories) {
     const items = [];
-    Object.entries(obj.categories).forEach(([situation, arr]) => {
+    Object.entries(obj.categories).forEach(([title, arr]) => {
       if (arr.length === 2) {
-        items.push({ title: situation, ukr: adaptToTelegram(arr[0]), en: adaptToTelegram(arr[1]) });
+        items.push({ title, ukr: arr[0], en: arr[1] });
       }
     });
     return { tab: obj.tab, items };
   }
-  // FAQ (Питання)
-  if (obj.items && obj.items.length && obj.items.every(el => "Питання" in el)) {
-    const items = obj.items.map(el => ({
+  // Вкладка FAQ
+  if (obj.tab === "FAQ") {
+    const items = (obj.items || []).map(el => ({
       title: el["Питання"] || '',
-      ukr: adaptToTelegram(el["Відповідь укр"] || ''),
-      en: adaptToTelegram(el["Відповідь англ"] || '')
+      ukr: el["Відповідь укр"] || '',
+      en: el["Відповідь англ"] || ''
     }));
     return { tab: obj.tab, items };
   }
-  // Обов'язки (Позиція)
-  if (obj.items && obj.items.length && obj.items.every(el => "Позиція" in el)) {
+  // Вкладка "Обов'язки на різних позиціях"
+  if (obj.tab && Array.isArray(obj.items) && obj.items[0]?.Позиція) {
     const items = obj.items.map(el => ({
       title: el["Позиція"] || '',
-      ukr: adaptToTelegram(el["Укр повідомлення"] || ''),
-      en: adaptToTelegram(el["Англ повідомлення"] || '')
+      ukr: el["Укр повідомлення"] || '',
+      en: el["Англ повідомлення"] || ''
     }));
     return { tab: obj.tab, items };
   }
-  // Інші категорії (items)
+  // Вкладка Промпти для чату GPT (будь-яке ім'я вкладки)
+  if (
+    obj.tab === "Промпти для чату GPT" ||
+    obj.tab === "GPT Chat Prompts"
+  ) {
+    const items = (obj.items || []).map(el => ({
+      name: el["Назва"] || el["Name"] || '',
+      prompt: el["Промпт"] || el["Prompt"] || ''
+    }));
+    return { tab: obj.tab, items };
+  }
+  // Інші (fallback)
   const items = (obj.items || []).map(el => ({
     title: el["Ситуація"] || '',
-    ukr: adaptToTelegram(el["Укр повідомлення"] || ''),
-    en: adaptToTelegram(el["Англ повідомлення"] || '')
+    ukr: el["Укр повідомлення"] || '',
+    en: el["Англ повідомлення"] || ''
   }));
   return { tab: obj.tab, items };
 }
 
-// Основна функція адаптації для Telegram
-function adaptToTelegram(text) {
-  if (!text) return '';
-  // Важливо: зберігаємо подвійні зірочки для Telegram (жирний), списки → тире
-  return text
-    .replace(/\*\*(.+?)\*\*/g, '**$1**') // залишаємо подвійні зірочки для жирного в TG
-    .replace(/^[-•]\s?/gm, '— ')
-    .replace(/\n{2,}/g, '\n\n')
-    .replace(/ {2,}/g, ' ')
-    .replace(/• /g, '— ')
-    .replace(/  +/g, ' ')
-    .trim();
-}
-
-// Рендер бокового меню
 function renderSidebar() {
   const sidebar = document.getElementById('sidebar');
   sidebar.innerHTML = '';
@@ -78,11 +75,37 @@ function renderSidebar() {
   });
 }
 
-// Рендер основного блоку
 function renderMain(tabIdx) {
   const main = document.getElementById('main');
   main.innerHTML = '';
   const tab = data[tabIdx];
+
+  // Відображення вкладки GPT промптів
+  if (tab.tab === "Промпти для чату GPT" || tab.tab === "GPT Chat Prompts") {
+    tab.items.forEach(item => {
+      const block = document.createElement('div');
+      block.className = 'item-block';
+
+      if (item.name) {
+        const title = document.createElement('div');
+        title.className = 'item-title';
+        title.textContent = item.name;
+        block.appendChild(title);
+      }
+      if (item.prompt) {
+        const btnPrompt = document.createElement('button');
+        btnPrompt.className = 'message-btn';
+        btnPrompt.type = 'button';
+        btnPrompt.textContent = item.prompt;
+        btnPrompt.onclick = () => navigator.clipboard.writeText(item.prompt);
+        block.appendChild(btnPrompt);
+      }
+      main.appendChild(block);
+    });
+    return;
+  }
+
+  // Відображення інших вкладок
   tab.items.forEach(item => {
     const block = document.createElement('div');
     block.className = 'item-block';
@@ -94,40 +117,27 @@ function renderMain(tabIdx) {
       title.textContent = item.title;
       block.appendChild(title);
     }
-
-    // Блок повідомлень (укр/англ)
+    // Блоки повідомлень (укр, англ)
     const row = document.createElement('div');
     row.className = 'message-row';
 
     if (item.ukr) {
       const btnUkr = document.createElement('button');
-      btnUkr.className = 'message-btn tg-ua';
+      btnUkr.className = 'message-btn';
       btnUkr.type = 'button';
-      btnUkr.innerHTML = formatMessageForHtml(item.ukr);
-      btnUkr.onclick = () => copyToClipboard(item.ukr);
+      btnUkr.textContent = item.ukr;
+      btnUkr.onclick = () => navigator.clipboard.writeText(item.ukr);
       row.appendChild(btnUkr);
     }
     if (item.en) {
       const btnEn = document.createElement('button');
-      btnEn.className = 'message-btn tg-en';
+      btnEn.className = 'message-btn';
       btnEn.type = 'button';
-      btnEn.innerHTML = formatMessageForHtml(item.en);
-      btnEn.onclick = () => copyToClipboard(item.en);
+      btnEn.textContent = item.en;
+      btnEn.onclick = () => navigator.clipboard.writeText(item.en);
       row.appendChild(btnEn);
     }
     block.appendChild(row);
     main.appendChild(block);
   });
-}
-
-// Форматування для перегляду в браузері (відображає перенос рядків та жирний)
-function formatMessageForHtml(text) {
-  return text
-    .replace(/\n/g, '<br>')
-    .replace(/\*\*([^\*]+)\*\*/g, '<b>$1</b>'); // в TG залишиться **жирний**, у браузері — жирний
-}
-
-// Копіювання у clipboard (залишає подвійні зірочки для Telegram!)
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text);
 }
