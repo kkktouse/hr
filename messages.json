@@ -185,5 +185,26 @@
         "Англ повідомлення": "Create static and animated ad creatives, contribute to concepts, design banners, prepare presentations, edit videos (resize, subtitles), and closely collaborate with marketing."
       }
     ]
-  }
+},
+  {
+    "tab": "Промпти для чату GPT",
+    "items": [
+      {
+        "Назва": "Оцінка резюме кандидата",
+        "Промпт": "Evaluate this resume based on: experience relevance, technical skills, soft skills, motivation. Give brief feedback and suggestions for improvement."
+      },
+      {
+        "Назва": "Write a rejection letter",
+        "Промпт": "Write a polite rejection letter to a candidate after an interview, leaving a positive impression and keeping the door open for future opportunities."
+      },
+      {
+        "Назва": "Prepare Junior Frontend questions",
+        "Промпт": "List 7 interview questions for a Junior Frontend Developer. Briefly state what each question tests."
+      },
+      {
+        "Назва": "English follow-up",
+        "Промпт": "Write a short follow-up email in English after an interview to ask about the results."
+      }
     ]
+  }
+]
