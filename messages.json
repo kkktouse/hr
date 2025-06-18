@@ -35,9 +35,9 @@
         "Hi!\n\nThank you for your time and interest. Unfortunately, we can’t offer you a position right now, but we’ll keep your CV on file.\n\nGood luck! 💙"
       ],
       "Якщо хлопчик": [
-        "Привіт!\n\nДякуємо за відгук, але ця вакансія наразі закрита. 🚫",
-        "Hello!\n\nThank you for your response, but this vacancy is currently closed. 🚫"
-      ]
+  "Привіт!\n\nДякуємо за відгук, але ця вакансія наразі **тимчасово закрита**. Зараз ми не можемо запропонувати позицію, але збережемо Ваші контакти в базі.\n\nБажаємо успіхів! ✨",
+  "Hello!\n\nThank you for your response, but this vacancy is **temporarily closed**. At the moment, we can’t offer you a position, but we will keep your contact information on file.\n\nWishing you success! ✨"
+]
     }
   },
 
