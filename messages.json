@@ -185,27 +185,5 @@
         "Англ повідомлення": "Create static and animated ad creatives, contribute to concepts, design banners, prepare presentations, edit videos (resize, subtitles), and closely collaborate with marketing."
       }
     ]
-  },
-{
-  "tab": "GPT Chat Prompts",
-  "items": [
-    {
-      "Name": "CV Extraction (TSV Output)",
-      "Prompt": "Extract the following fields from the provided PDF CV and output a single-line TSV (tab-separated) string in this exact order:\nName Candidate\tSource\tCountry\tChannel Communication\tEmail\tphone\tTelegram\tStatus\tLast Contact Date\tDepartment\tProfession\tLanguage\tLanguage level\tPortfolio\tCV\n\nStrict extraction and formatting rules:\n- All extracted values must be in English only, including Department and Profession.\n- If a field is missing, insert a dash (\"-\").\n- \"Source\" is always \"Djinni\" for designers and \"Worh\" for managers or leadgen. Identify role by Profession field.\n- \"Country\" is always \"Ukraine\" unless another country is explicitly mentioned in the document.\n- \"Status\" is always \"Application\".\n- \"Last Contact Date\" is always today’s date in DD-MM-YYYY format.\n- \"Language\" is always \"English\".\n- \"Language level\" is always \"B1\".\n- \"Channel Communication\" is always \"Telegram\".\n- Department and Profession must strictly match the allowed list below. If profession is not listed, set both Department and Profession as \"-\".\n- Allowed Departments and Professions (English only):\n\n3d designer — designers\naccount manager — managers\naffiliate manager — marketers\nanalyst — managers\nanimator — videographers\nback end developer — developers\nchat operator — managers\ncontent manager — marketers\ncopywriter — marketers\nemail marketer — marketers\nevent manager — managers\nfinancial manager — managers\nfront end developer — developers\nfull stack developer — developers\ngraphic designer — designers\nhr manager — managers\nillustrator — designers\ninfluencer manager — marketers\ninterior designer — designers\ninvestment manager — managers\nlead generator — managers\nlinkbuilder — marketers\nmedia buyer — marketers\nmobile developer — developers\nmobile video editor — videographers\nmotion designer — videographers\npersonal assistant — managers\nppc specialist — marketers\npr manager — marketers\nproject manager — managers\nproofreader — marketers\nqa — developers\nrecruiter — managers\nsales manager — managers\nseo manager — marketers\nsocial media manager — marketers\nsystem administrator — developers\ntargetologist — marketers\ntourism manager — managers\nui/ux designer — designers\nvideo editor — videographers\nweb designer — designers\nwordpress designer — designers\n\nIf the CV does not contain Telegram, leave the field as \"-\" so that it can be added manually later.\nFor \"Portfolio\" and \"CV\", extract portfolio links and attach the text or link to the CV if available, otherwise use \"-\".\nReturn only the requested single-line TSV output with no extra commentary."
-    },
-    {
-      "Name": "Resume Evaluation",
-      "Prompt": "Evaluate this resume according to these criteria: experience relevance, technical skills, soft skills, and motivation. Provide a short feedback and specific suggestions for improvement."
-    },
-    {
-      "Name": "Rejection Email to Candidate",
-      "Prompt": "Compose a polite and professional rejection email to a candidate after an interview. The tone should be positive, leave a good impression, and encourage the possibility of future cooperation."
-    },
-    {
-      "Name": "Junior Frontend Interview Questions",
-      "Prompt": "Prepare a list of 7 interview questions for a Junior Frontend Developer. For each question, specify what the question is designed to assess."
-    },
-  ]
-}
-
-
+  }
+    ]
